@@ -9,45 +9,45 @@
      :links links}))
 
 (defn update-links
-  [cell1 cell2 f]
-  (->> (dissoc cell2 :links)
-       (update-in cell1 [:links] f)))
+  [c1 c2 f]
+  (->> (dissoc c2 :links)
+       (update-in c1 [:links] f)))
 
 (defn link
-  [cell1 cell2]
-  (update-links cell1 cell2 conj))
+  [c1 c2]
+  (update-links c1 c2 conj))
 
 (defn unlink
-  [cell1 cell2]
-  (update-links cell1 cell2 disj))
+  [c1 c2]
+  (update-links c1 c2 disj))
 
 (defn links
-  [cell]
-  (:links cell))
+  [c]
+  (:links c))
 
 (defn linked?
-  [cell1 cell2]
-  (->> (dissoc cell2 :links)
-       (get (:links cell1))
+  [c1 c2]
+  (->> (dissoc c2 :links)
+       (get (:links c1))
        boolean))
 
 (defn cell-diff
-  [cell1 cell2]
-  {:x (- (:x cell1) (:x cell2))
-   :y (- (:y cell1) (:y cell2))})
+  [c1 c2]
+  {:x (- (:x c1) (:x c2))
+   :y (- (:y c1) (:y c2))})
 
 (defn coord-sum
-  [cell]
-  (+ (:x cell) (:y cell)))
+  [c]
+  (+ (:x c) (:y c)))
 
 (defn neighbours?
-  [cell1 cell2]
-  (and (linked? cell1 cell2)
-       (->> (cell-diff cell1 cell2)
+  [c1 c2]
+  (and (linked? c1 c2)
+       (->> (cell-diff c1 c2)
             coord-sum
             Math/abs
             (= 1))))
 
 (defn neighbours
-  [cell]
-  (filter #(neighbours? cell %) (links cell)))
+  [c]
+  (filter #(neighbours? c %) (links c)))
