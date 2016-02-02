@@ -1,4 +1,5 @@
-(ns mazes-clj.grid)
+(ns mazes-clj.grid
+  (:import (java.util Random)))
 
 (defn grid
   "Creates a grid of `rows` by `cols` unlinked cells."
@@ -9,6 +10,11 @@
   {:rows       rows
    :cols       cols
    :links      {}})
+
+(defn size
+  "Returns the number of cells in the `grid`."
+  [grid]
+  (* (:rows grid) (:cols grid)))
 
 (defn valid-cell?
   "Checks that the given cell has valid grid coordinates, i.e., both are positive."
@@ -28,6 +34,13 @@
   [x y]
   {:x x
    :y y})
+
+(defn random-cell
+  "Returns a random cell on the grid."
+  [grid]
+  (let [x (inc (rand-int (:rows grid)))
+        y (inc (rand-int (:cols grid)))]
+    (cell x y)))
 
 (defn cell-diff
   "Returns the difference of `c1` and `c2`."
