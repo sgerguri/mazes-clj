@@ -83,15 +83,29 @@
   [grid c]
   (filter #(has-cell? grid %) (cell-neighbours c)))
 
+(defn update-link
+  [grid c1 c2 f bidir?]
+  (if bidir?
+    (-> grid
+        (update-link c1 c2 f false)
+        (update-link c2 c1 f false))
+    (update-in grid [:links c1] #(f (set %) c2))))
+
 (defn link
-  "Unilaterally links `c1` to `c2` in the `grid`."
-  [grid c1 c2]
-  (update-in grid [:links c1] conj c2))
+  "Links `c1` to `c2` in the `grid`.
+  If `bidir?` is false, the link will be unidirectional instead."
+  ([grid c1 c2]
+    (link grid c1 c2 true))
+  ([grid c1 c2 bidir?]
+    (update-link grid c1 c2 conj bidir?)))
 
 (defn unlink
-  "Unilaterally unlinks `c1` from `c2` in the `grid`."
-  [grid c1 c2]
-  (update-in grid [:links c1] disj c2))
+  "Unlinks `c1` from `c2` in the `grid`.
+  If `bidir?` is false, the unidirectional link from `c2` to `c1` will be preserved."
+  ([grid c1 c2]
+    (unlink grid c1 c2 true))
+  ([grid c1 c2 bidir?]
+    (update-link grid c1 c2 disj bidir?)))
 
 (defn links
   "Returns all links of `c` in the `grid`."
@@ -102,3 +116,17 @@
   "Returns true when `c1` and `c2` are linked in the `grid`."
   [grid c1 c2]
   (boolean (get-in grid [:links c1] c2)))
+
+(defn row-seq
+  "Returns a seq on the rows in the grid."
+  [grid]
+  (for [row (range 1 (inc (:rows grid)))]
+    (for [col (range 1 (inc (:cols grid)))]
+      (cell row col))))
+
+(defn cell-seq
+  "Returns a seq on the cells in the grid, ordered by row and column."
+  [grid]
+  (for [row (range 1 (inc (:rows grid)))
+        col (range 1 (inc (:cols grid)))]
+    (cell row col)))
