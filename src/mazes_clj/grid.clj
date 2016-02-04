@@ -1,5 +1,4 @@
-(ns mazes-clj.grid
-  (:import (java.util Random)))
+(ns mazes-clj.grid)
 
 (defn grid
   "Creates a grid of `rows` by `cols` unlinked cells."
@@ -19,39 +18,38 @@
 (defn valid-cell?
   "Checks that the given cell has valid grid coordinates, i.e., both are positive."
   [cell]
-  (and (pos? (:x cell))
-       (pos? (:y cell))))
+  (and (pos? (:row cell))
+       (pos? (:col cell))))
 
 (defn has-cell?
   "Returns true when the cell is a valid grid cell located on the grid."
   [grid c]
   (and (valid-cell? c)
-       (>= (:rows grid) (:x c))
-       (>= (:cols grid) (:y c))))
+       (>= (:rows grid) (:row c))
+       (>= (:cols grid) (:col c))))
 
 (defn cell
-  "Creates a cell with `x` and `y` coordinates."
-  [x y]
-  {:x x
-   :y y})
+  "Creates a cell located in `row` and `col`."
+  [row col]
+  {:row row
+   :col col})
 
 (defn random-cell
   "Returns a random cell on the grid."
   [grid]
-  (let [x (inc (rand-int (:rows grid)))
-        y (inc (rand-int (:cols grid)))]
-    (cell x y)))
+  (let [row (inc (rand-int (:rows grid)))
+        col (inc (rand-int (:cols grid)))]
+    (cell row col)))
 
 (defn cell-diff
   "Returns the difference of `c1` and `c2`."
   [c1 c2]
-  {:x (- (:x c1) (:x c2))
-   :y (- (:y c1) (:y c2))})
+  (cell (- (:row c1) (:row c2)) (- (:col c1) (:col c2))))
 
 (defn coord-sum
-  "Returns the sum of the cell's x and y coordinates."
+  "Returns the sum of the cell's row and column."
   [c]
-  (+ (:x c) (:y c)))
+  (+ (:row c) (:col c)))
 
 (defn cell-neighbours?
   "Returns true when `c1` and `c2` are neighbours."
@@ -71,17 +69,19 @@
 (defn cell-neighbours
   "Returns the neighbours of `c`."
   [c]
-  (let [x (:x c)
-        y (:y c)]
-    [(cell (dec x) y)
-     (cell (inc x) y)
-     (cell x (dec y))
-     (cell x (inc y))]))
+  (let [row (:row c)
+        col (:col c)]
+    {:north (cell (inc row) col)
+     :south (cell (dec row) col)
+     :west  (cell row (dec col))
+     :east  (cell row (inc col))}))
 
 (defn neighbours
   "Returns the neighbours of `c` in the `grid`."
   [grid c]
-  (filter #(has-cell? grid %) (cell-neighbours c)))
+  (->> (cell-neighbours c)
+       (filter (fn [[_border cell]] (has-cell? grid cell)))
+       (into {})))
 
 (defn update-link
   [grid c1 c2 f bidir?]
@@ -122,11 +122,11 @@
   [grid]
   (for [row (range 1 (inc (:rows grid)))]
     (for [col (range 1 (inc (:cols grid)))]
-      (cell row col))))
+      (cell col row))))
 
 (defn cell-seq
   "Returns a seq on the cells in the grid, ordered by row and column."
   [grid]
   (for [row (range 1 (inc (:rows grid)))
         col (range 1 (inc (:cols grid)))]
-    (cell row col)))
+    (cell col row)))
